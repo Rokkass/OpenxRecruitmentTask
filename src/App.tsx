@@ -63,8 +63,16 @@ interface Cart {
 interface sumType {
   [key: string]: number | undefined;
 }
-
-export const getCalculations = () =>{
+// export const getCalculations = () =>{
+//
+//
+//   return {
+//     sumProductsByCategory,
+//     highestValueCart,
+//     furthestUsers
+//   };
+// }
+function App() {
   const {data: products}: Product = useFetch("products");
   const {data: users}: User = useFetch("users");
   const {data: carts}: Cart = useFetch(
@@ -150,20 +158,6 @@ export const getCalculations = () =>{
     return maxIndexes.map((i) => names[i]);
   }
   const furthestUsers = findFurthestUsers();
-
-  return {countProducts,
-    getHighestValueCart,
-    findFurthestUsers,
-    sumProductsByCategory,
-    highestValueCart,
-    furthestUsers
-  };
-}
-function App() {
-  const {sumProductsByCategory,
-    highestValueCart,
-    furthestUsers
-  } = getCalculations();
 
   return (
     <div className="app">
