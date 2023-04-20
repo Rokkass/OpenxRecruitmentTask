@@ -27,7 +27,7 @@ const useFetch = (endpoint: string) => {
     fetchData();
   }, []);
 
-  return { data, isLoading, error };
+  return { data };
 };
 
 export default useFetch;

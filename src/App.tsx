@@ -1,6 +1,6 @@
 import useFetch from "./hooks/useFetch";
 
-interface userObj {
+interface User {
   data: {
     address: {
       geolocation: {
@@ -23,10 +23,8 @@ interface userObj {
     phone: string;
     v: number;
   }[];
-  isLoading: boolean;
-  error: string;
 }
-interface productObj {
+interface Product {
   data: {
     id: number;
     title: string;
@@ -39,10 +37,8 @@ interface productObj {
       count: number;
     };
   }[];
-  isLoading: boolean;
-  error: string;
 }
-interface cartObj {
+interface Cart {
   data: {
     id: number;
     userId: number;
@@ -63,69 +59,40 @@ interface cartObj {
     ];
     __v: number;
   }[];
-  isLoading: boolean;
-  error: string;
 }
 interface sumType {
   [key: string]: number | undefined;
 }
-interface User {
-  id: number;
-  address: {
-    geolocation: {
-      lat: string;
-      long: string;
-    };
-  };
-  name: {
-    firstname: string;
-    lastname: string;
-  };
-}
-interface Product {
-  data: {
-    id: number;
-    title: string;
-    price: number;
-    description: string;
-    category: string;
-    image: string;
-    rating: {
-      rate: number;
-      count: number;
-    };
-  }[];
-}
+
 export const getCalculations = () =>{
-  const users: userObj = useFetch("users");
-  const productsInfo: productObj = useFetch("products");
-  const products = productsInfo.data;
-  const cartsInfo: cartObj = useFetch(
+  const {data: products}: Product = useFetch("products");
+  const {data: users}: User = useFetch("users");
+  const {data: carts}: Cart = useFetch(
       "carts/?startdate=2000-01-01&enddate=2023-04-07"
   );
-  const carts = cartsInfo.data;
-
   function countProducts() {
     const sum: sumType = {};
     for (const prod in products) {
-      if (sum[products[prod]["category"]] === undefined) {
-        sum[products[prod]["category"]] = products[prod]["price"];
-      } else if (sum[products[prod]["category"]] !== undefined) {
-        sum[products[prod]["category"]] += products[prod]["price"];
+      const category = products[prod]["category"];
+      const price = products[prod]["price"];
+      if (category in sum) {
+        sum[category]! += price;
+      } else {
+        sum[category]! = price;
       }
     }
     sum["men's clothing"] = Number(sum["men's clothing"]?.toFixed(2));
     return sum;
   }
-
   const sumProductsByCategory = countProducts();
+
   function getHighestValueCart() {
     const sums = carts.map((item) => {
       return item.products.reduce((acc, item) => {
         const price = products.find(
             (product) => product.id === item.productId
         )?.price;
-        return acc + price * item.quantity;
+        return price !== undefined ? acc + price * item.quantity : 0;
       }, 0);
     }, []);
 
@@ -133,7 +100,7 @@ export const getCalculations = () =>{
     const cartId = carts[cartIndex]?.id;
 
     const cartOwnerId = carts[cartIndex]?.userId;
-    const ownerObject = users.data.find((user) => user.id === cartOwnerId)?.name;
+    const ownerObject = users.find((user) => user.id === cartOwnerId)?.name;
     const cartValue = Math.max(...sums);
 
     return {
@@ -142,10 +109,9 @@ export const getCalculations = () =>{
       value: cartValue,
     };
   }
-
   const highestValueCart = getHighestValueCart();
 
-  function findFurthestUsers(users: User[]): string[] {
+  function findFurthestUsers(): string[] {
     let maxDistance = 0;
     let names: string[] = [];
     let dist: number[] = [];
@@ -183,13 +149,21 @@ export const getCalculations = () =>{
     const maxIndexes = [...dist.keys()].filter((i) => dist[i] === maxDistance);
     return maxIndexes.map((i) => names[i]);
   }
+  const furthestUsers = findFurthestUsers();
 
-  const furthestUsers = findFurthestUsers(users.data);
-
-  return {countProducts, getHighestValueCart, findFurthestUsers, sumProductsByCategory, highestValueCart, furthestUsers };
+  return {countProducts,
+    getHighestValueCart,
+    findFurthestUsers,
+    sumProductsByCategory,
+    highestValueCart,
+    furthestUsers
+  };
 }
 function App() {
-  const {sumProductsByCategory, highestValueCart, furthestUsers} = getCalculations();
+  const {sumProductsByCategory,
+    highestValueCart,
+    furthestUsers
+  } = getCalculations();
 
   return (
     <div className="app">
