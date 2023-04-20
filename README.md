@@ -30,10 +30,14 @@ Implement a program which:
 3. ✅ Finds a cart with the highest value, determines its value and full name of its owner
 
    Cart id: 2
+   
    Cart owner: john doe
+   
    Cart value: 2578.7
+   
 4. ✅ Finds the two users living furthest away from each other
    People that live furthest away from each other are:
 
    john doe and derek powell, 
+   
    david morrison and derek powell
